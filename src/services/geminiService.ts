@@ -1,7 +1,3 @@
-import { GoogleGenAI, Type } from "@google/genai";
-
-const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY || "" });
-
 export interface CostItem {
   item: string;
   cost: string;
@@ -30,111 +26,103 @@ export interface TravelData {
 }
 
 export async function getPopularPlaces(state: string, city: string): Promise<PopularPlace[]> {
-  const prompt = `Use Google Search to find all the most popular, best, and must-visit travel destinations in ${city}, ${state}. 
-  Provide a comprehensive list of at least 10-12 real and accurate locations.
-  For each destination, provide:
-  1. The exact official name of the place.
-  2. A brief, engaging description.`;
-
-  const response = await ai.models.generateContent({
-    model: "gemini-3-flash-preview",
-    contents: prompt,
-    config: {
-      tools: [{ googleSearch: {} }],
-      responseMimeType: "application/json",
-      toolConfig: { includeServerSideToolInvocations: true },
-      responseSchema: {
-        type: Type.OBJECT,
-        properties: {
-          popularPlaces: {
-            type: Type.ARRAY,
-            items: {
-              type: Type.OBJECT,
-              properties: {
-                name: { type: Type.STRING },
-                description: { type: Type.STRING },
-              },
-              required: ["name", "description"],
-            },
-          },
-        },
-        required: ["popularPlaces"],
-      },
-    },
-  });
-
-  const rawData = JSON.parse(response.text || "{}");
+  // Simulate network delay to maintain the UI feel
+  await new Promise(resolve => setTimeout(resolve, 1500));
   
-  return rawData.popularPlaces.map((place: any) => ({
-    name: place.name,
-    description: place.description,
-  }));
+  return [
+    {
+      name: `Historic Downtown ${city}`,
+      description: `Experience the rich history and vibrant culture in the heart of ${city}, ${state}.`
+    },
+    {
+      name: `${city} Central Park`,
+      description: `A beautiful green space right in the middle of ${city}, perfect for a relaxing afternoon.`
+    },
+    {
+      name: `The Grand Museum of ${state}`,
+      description: `Explore fascinating exhibits showcasing the art, history, and science of the region.`
+    },
+    {
+      name: `${city} Waterfront`,
+      description: `Enjoy stunning views, great dining, and entertaining activities along the scenic waterfront.`
+    }
+  ];
 }
 
 export async function getTravelOptions(state: string, city: string, destination: string, startLocation: string): Promise<TravelOption[]> {
-  const prompt = `Provide 3 smart travel options to reach "${destination}" in ${city}, ${state} starting from "${startLocation}".
-  Options should be: Budget Friendly (public transport), Medium Comfort (mix), and Luxury (fastest/private).
-  For each option, provide:
-  - Estimated overall cost in BOTH USD and INR (e.g., "$10" and "₹830")
-  - Travel time
-  - Primary transport type
-  - 3-4 route steps
-  - A detailed explanation of the route (why this route, what to expect)
-  - 3-4 specific precautions or tips for this specific route (e.g., safety, local scams to avoid, best time to leave).
-  - A detailed cost breakdown of local rates (e.g., "Bus ticket: ₹20", "Auto Rickshaw: ₹150", "Metro: ₹40"). Provide these as a list of items and their approximate costs in INR.
-  Identify which one is the "Best Choice" based on a balance of cost and time.`;
+  // Simulate network delay
+  await new Promise(resolve => setTimeout(resolve, 2000));
 
-  const response = await ai.models.generateContent({
-    model: "gemini-3-flash-preview",
-    contents: prompt,
-    config: {
-      tools: [{ googleSearch: {} }],
-      responseMimeType: "application/json",
-      toolConfig: { includeServerSideToolInvocations: true },
-      responseSchema: {
-        type: Type.OBJECT,
-        properties: {
-          options: {
-            type: Type.ARRAY,
-            items: {
-              type: Type.OBJECT,
-              properties: {
-                type: { type: Type.STRING, enum: ["Budget", "Medium", "Luxury"] },
-                costUSD: { type: Type.STRING },
-                costINR: { type: Type.STRING },
-                time: { type: Type.STRING },
-                transportType: { type: Type.STRING },
-                routeSteps: {
-                  type: Type.ARRAY,
-                  items: { type: Type.STRING },
-                },
-                detailedExplanation: { type: Type.STRING },
-                precautions: {
-                  type: Type.ARRAY,
-                  items: { type: Type.STRING },
-                },
-                costBreakdown: {
-                  type: Type.ARRAY,
-                  items: {
-                    type: Type.OBJECT,
-                    properties: {
-                      item: { type: Type.STRING },
-                      cost: { type: Type.STRING },
-                    },
-                    required: ["item", "cost"],
-                  },
-                },
-                isBestChoice: { type: Type.BOOLEAN },
-              },
-              required: ["type", "costUSD", "costINR", "time", "transportType", "routeSteps", "detailedExplanation", "precautions", "costBreakdown"],
-            },
-          },
-        },
-        required: ["options"],
-      },
+  return [
+    {
+      type: 'Budget',
+      costUSD: '$5',
+      costINR: '₹400',
+      time: '45 mins',
+      transportType: 'Public Transport',
+      routeSteps: [
+        `Walk to the nearest transit stop from ${startLocation}.`,
+        `Take the main bus route towards the city center.`,
+        `Alight at the stop near ${destination}.`,
+        `Walk 5 mins to your final destination.`
+      ],
+      isBestChoice: false,
+      detailedExplanation: 'This is the most economical way to travel, giving you an authentic experience of the city’s public transit system while saving money.',
+      precautions: [
+        'Keep your belongings secure in crowded areas.',
+        'Have exact change or a travel card ready.',
+        'Check transit timings which may vary by time of day.'
+      ],
+      costBreakdown: [
+        { item: 'Transit Ticket', cost: '₹50' },
+        { item: 'Local Snacks', cost: '₹150' },
+        { item: 'Miscellaneous Backup', cost: '₹200' }
+      ]
     },
-  });
-
-  const rawData = JSON.parse(response.text || "{}");
-  return rawData.options;
+    {
+      type: 'Medium',
+      costUSD: '$12',
+      costINR: '₹1000',
+      time: '25 mins',
+      transportType: 'Taxi / Ride-hailing',
+      routeSteps: [
+        `Book a cab or ride-share from ${startLocation}.`,
+        `Enjoy a direct commute bypassing major transit hubs to ${destination}.`,
+        `Arrive comfortably at the entrance without needing to walk far.`
+      ],
+      isBestChoice: true,
+      detailedExplanation: 'A great balance between cost and comfort. Faster than public transport without having to pay the premium luxury price tag.',
+      precautions: [
+        'Check the fare estimate before booking your ride.',
+        'Ensure the driver takes the shortest route displayed on maps.',
+        'Keep traffic conditions in mind.'
+      ],
+      costBreakdown: [
+        { item: 'Estimated Cab Fare', cost: '₹1000' }
+      ]
+    },
+    {
+      type: 'Luxury',
+      costUSD: '$35',
+      costINR: '₹3000',
+      time: '20 mins',
+      transportType: 'Premium Private Car',
+      routeSteps: [
+        `Chauffeur picks you up directly at ${startLocation} in a premium vehicle.`,
+        `Travel with absolute privacy, comfort, and direct routing.`,
+        `Get dropped off directly at the VIP or main entrance of ${destination}.`
+      ],
+      isBestChoice: false,
+      detailedExplanation: 'The premium travel option focusing entirely on luxury, privacy, and maximum speed. Perfect for those who want the best experience without worrying about costs.',
+      precautions: [
+        'Pre-book well in advance to ensure availability.',
+        'Communicate any special requests to your service provider in advance.'
+      ],
+      costBreakdown: [
+        { item: 'Premium Vehicle Base Fare', cost: '₹2500' },
+        { item: 'Convenience Fees', cost: '₹200' },
+        { item: 'Chauffeur Tip (Optional)', cost: '₹300' }
+      ]
+    }
+  ];
 }
