@@ -1,0 +1,5 @@
+{
+  "name": "QuickWay – Smart Travel Routes",
+  "description": "A modern travel app that provides smart, categorized travel routes (Budget, Medium, Luxury) with interactive maps and popular destination guides.",
+  "requestFramePermissions": ["geolocation"]
+}
